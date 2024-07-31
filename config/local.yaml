@@ -1,4 +1,4 @@
-env: "prod"
+env: "local"
 storage_path: "/usr/url-srt/storage.db"
 http_server:
   address: "0.0.0.0:8081"

@@ -1,0 +1,7 @@
+#---
+#- name: Deploy app on ec2
+#  hosts: ec2_servers
+#  become: true
+#  roles:
+#    vars:
+

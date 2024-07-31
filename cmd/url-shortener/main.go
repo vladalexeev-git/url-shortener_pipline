@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+	eventsender "url-shortener/internal/services/event-sender"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,7 +20,6 @@ import (
 	mwLogger "url-shortener/internal/http-server/middleware/logger"
 	"url-shortener/internal/lib/logger/handlers/slogpretty"
 	"url-shortener/internal/lib/logger/sl"
-	eventsender "url-shortener/internal/services/event-sender"
 	"url-shortener/internal/storage/sqlite"
 )
 
@@ -27,6 +28,15 @@ const (
 	envDev   = "dev"
 	envProd  = "prod"
 )
+
+// TODO: delete when deploy
+//func init() {
+//	if err := godotenv.Load(".env"); err != nil {
+//		log.Fatal("can't set .env file:", err)
+//	}
+//
+//	log.Println("env are set")
+//}
 
 func main() {
 	cfg := config.MustLoad()
@@ -83,7 +93,10 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			log.Error("failed to start server")
+			log.Warn(err.Error())
+			if !errors.Is(err, http.ErrServerClosed) {
+				log.Error("failed to start server")
+			}
 		}
 	}()
 

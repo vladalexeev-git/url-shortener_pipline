@@ -1,0 +1,11 @@
+#name: Push-to-EC2-Prod
+#
+## Пушить только на изменения в ветке master
+#on:
+#  push:
+#    branches:
+#      - master
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-22.04
+

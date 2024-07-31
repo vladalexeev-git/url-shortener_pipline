@@ -23,14 +23,9 @@ func New(storagePath string) (*Storage, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	stmt, err := db.Prepare(`
-	CREATE TABLE IF NOT EXISTS url(
-		id INTEGER PRIMARY KEY,
-		alias TEXT NOT NULL UNIQUE,
-		url TEXT NOT NULL);
-	CREATE INDEX IF NOT EXISTS idx_alias ON url(alias);
+	stmtEvent, err := db.Prepare(`
 
-	CREATE TABLE IF NOT EXISTS events(
+CREATE TABLE IF NOT EXISTS events(
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		event_type TEXT NOT NULL,
 		payload TEXT NOT NULL,
@@ -39,12 +34,29 @@ func New(storagePath string) (*Storage, error) {
 	);
 	`)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: stmt event %w", op, err)
 	}
 
-	_, err = stmt.Exec()
+	_, err = stmtEvent.Exec()
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: stmt event exec %w", op, err)
+	}
+
+	stmtUrl, err := db.Prepare(`
+
+	CREATE TABLE IF NOT EXISTS url(
+		id INTEGER PRIMARY KEY,
+		alias TEXT NOT NULL UNIQUE,
+		url TEXT NOT NULL);
+	CREATE INDEX IF NOT EXISTS idx_alias ON url(alias);
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: stmt url %w", op, err)
+	}
+
+	_, err = stmtUrl.Exec()
+	if err != nil {
+		return nil, fmt.Errorf("%s: stmt url exec %w", op, err)
 	}
 
 	return &Storage{db: db}, nil
