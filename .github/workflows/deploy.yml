@@ -10,7 +10,7 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     env:
-      DOCKER_IMAGE: url-shortener-i:latest
+      DOCKER_IMAGE: url-shortener-i
       GITHUB_USER: $GITHUB_ACTOR
     steps:
       - name: Check github actor
