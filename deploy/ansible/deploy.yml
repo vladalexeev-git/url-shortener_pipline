@@ -81,5 +81,5 @@
         env:
           CONFIG_PATH: "config/prod.yaml"
           HTTP_SERVER_PASSWORD: "pass"
-          volumes:
-            - "/srv/dbfiles/:/usr/url-srt/"
+        volumes:
+          - "/srv/dbfiles/:/usr/url-srt/"
