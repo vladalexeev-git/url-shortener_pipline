@@ -36,16 +36,6 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
 
-#      - name: Build Docker image
-#        run: docker build -t ${{ env.DOCKER_IMAGE }} .
-##        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }} .
-#
-#      - name: Set image tag
-#      - run: docker tag ${{ env.DOCKER_IMAGE }} ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}
-#
-#      - name: Push Docker image to Docker Hub
-#        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}
-
       - name: Create SSH key file
         run: echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /tmp/ansible_ssh_key
         env:
