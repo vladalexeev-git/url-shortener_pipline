@@ -63,7 +63,7 @@ jobs:
         run: |
           service ssh status
           cd deploy/ansible
-          cat setup-prod.yml
+          cat deploy.yml
           ansible-playbook -vvv --private-key /home/runner/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml
 
 
