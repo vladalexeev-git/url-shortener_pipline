@@ -1,17 +1,21 @@
 name: Docker Build and Push
 
 on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches:
-      - master
-
+    branches: [ "master" ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-22.04
     env:
       DOCKER_IMAGE: url-shortener-i:latest
-
+      GITHUB_USER: $GITHUB_ACTOR
     steps:
+      - name: Check github actor
+        run: echo "The GitHub actor is $GITHUB_ACTOR"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -36,23 +40,41 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
 
-      - name: Create SSH key file
-        run: echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /tmp/ansible_ssh_key
-        env:
-          ANSIBLE_SSH_PRIVATE_KEY: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+#      - name: Create SSH key file
+#        run: echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /tmp/ansible_ssh_key
+#        env:
+#          ANSIBLE_SSH_PRIVATE_KEY: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+#
+#      - name: Set permissions for SSH key
+#        run: chmod 600 /tmp/ansible_ssh_key
 
-      - name: Set permissions for SSH key
-        run: chmod 600 /tmp/ansible_ssh_key
+#      - name: Test SSH connection
+#        run: ssh -i /tmp/ansible_ssh_key -o StrictHostKeyChecking=no ubuntu@ec2-44-204-179-61.compute-1.amazonaws.com 'echo "SSH connection successful"'
+      - name: Setup SSH configuration for connect
+        shell: bash
+        run: |
+          eval `ssh-agent -s`
+          mkdir -p /home/runner/.ssh/
+          touch /home/runner/.ssh/id_rsa
+          echo -e "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /home/${{env.GITHUB_USER}}/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
+          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ec2-3-84-220-245.compute-1.amazonaws.com >> /home/${{env.GITHUB_USER}}/.ssh/known_hosts
+      - name: Run ansible deploy playbook
+        shell: bash
+        run: |
+          service ssh status
+          cd deploy/ansible
+          cat setup-prod.yml
+          ansible-playbook -vvv --private-key /home/${{env.GITHUB_USER}}/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml
 
-      - name: Test SSH connection
-        run: ssh -i /tmp/ansible_ssh_key -o StrictHostKeyChecking=no ubuntu@ec2-44-204-179-61.compute-1.amazonaws.com 'echo "SSH connection successful"'
 
-      - name: Run ansible deploy palaybook
-        uses: ansible/ansible-runner-action@v1
-        with:
-          playbook: deploy/deploy.yml
-          inventory: deploy/inventory.ini
-        env:
-          ANSIBLE_CONFIG: .github/ansible.cfg
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-          ANSIBLE_SSH_PRIVATE_KEY: /tmp/ansible_ssh_key
+
+#      - name: Run ansible deploy playbook
+#        uses: ansible/ansible-runner-action@v1
+#        with:
+#          playbook: deploy/deploy.yml
+#          inventory: deploy/inventory.ini
+#        env:
+#          ANSIBLE_CONFIG: .github/ansible.cfg
+#          ANSIBLE_HOST_KEY_CHECKING: "False"
+#          ANSIBLE_SSH_PRIVATE_KEY: /tmp/ansible_ssh_key
