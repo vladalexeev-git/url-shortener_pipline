@@ -3,7 +3,6 @@
   hosts: ec2_servers
   become: true
   vars:
-    docker_image_name: url-shortener-i:latest
     docker_container_name: url-shortener-c
     app_port: 8082
 
