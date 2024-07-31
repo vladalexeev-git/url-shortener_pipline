@@ -1,7 +1,86 @@
-#---
-#- name: Deploy app on ec2
-#  hosts: ec2_servers
-#  become: true
-#  roles:
-#    vars:
+---
+- name: Install Docker
+  hosts: ec2_servers
+  become: true
+  vars:
+    docker_image_name: url-shortener-i:latest
+    docker_container_name: url-shortener-c
+    app_port: 8082
 
+  tasks:
+    - name: Update apt package index
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - lsb-release
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Docker’s official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Update apt package index after adding Docker repository
+      apt:
+        update_cache: yes
+
+    - name: Ensure Docker is installed
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add current user to Docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Ensure Docker container is absent
+      docker_container:
+        name: "{{ docker_container_name }}"
+        state: absent
+
+#    - name: Remove old Docker image if it exists
+#      docker_image:
+#        name: "{{ docker_image_name }}"
+#        state: absent
+#        force: yes
+#      ignore_errors: yes
+
+    - name: Pull Docker image from Docker Hub
+      docker_image:
+        name: "{{ docker_image_name }}"
+        source: pull
+
+    - name: Run Docker container with the new image
+      docker_container:
+        name: "{{ docker_container_name }}"
+        image: "{{ docker_image_name }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ app_port }}:8081"
+        env:
+          CONFIG_PATH: "config/prod.yaml"
+          HTTP_SERVER_PASSWORD: "pass"
+          volumes:
+            - /srv/dbfiles/:/usr/url-srt/

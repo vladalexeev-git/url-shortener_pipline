@@ -1,7 +1,5 @@
 FROM golang:1.22.5 as builder
 
-#RUN mkdir /build
-#ADD . /build/
 WORKDIR /build
 COPY . .
 

@@ -29,15 +29,6 @@ const (
 	envProd  = "prod"
 )
 
-// TODO: delete when deploy
-//func init() {
-//	if err := godotenv.Load(".env"); err != nil {
-//		log.Fatal("can't set .env file:", err)
-//	}
-//
-//	log.Println("env are set")
-//}
-
 func main() {
 	cfg := config.MustLoad()
 
