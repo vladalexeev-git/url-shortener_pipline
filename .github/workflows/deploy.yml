@@ -13,9 +13,6 @@ jobs:
       DOCKER_IMAGE: url-shortener-i
       GITHUB_USER: $GITHUB_ACTOR
     steps:
-      - name: Check github actor
-        run: echo "The GitHub actor is $GITHUB_ACTOR"
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -54,10 +51,10 @@ jobs:
         shell: bash
         run: |
           eval `ssh-agent -s`
-          mkdir -p /home/runner/.ssh/
-          touch /home/runner/.ssh/id_rsa
+          mkdir -p /home/${{env.GITHUB_USER}}/.ssh/
+          touch /home/${{env.GITHUB_USER}}/.ssh/id_rsa
           echo -e "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /home/${{env.GITHUB_USER}}/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa
+          chmod 600 /home/${{env.GITHUB_USER}}/.ssh/id_rsa
           ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ec2-3-84-220-245.compute-1.amazonaws.com >> /home/${{env.GITHUB_USER}}/.ssh/known_hosts
       - name: Run ansible deploy playbook
         shell: bash
