@@ -11,31 +11,33 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       DOCKER_IMAGE: url-shortener-i
-      GITHUB_USER: $GITHUB_ACTOR
     steps:
+      - name: Print Current User
+        run: whoami
+
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Extract short SHA
-        run: echo "SHORT_SHA=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
-
-      - name: Build and push Docker image
-        run: |
-          DOCKER_BUILDKIT=1 docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }} .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }} ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest
-        env:
-          DOCKER_BUILDKIT: 1
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v2
+#
+#      - name: Log in to DockerHub
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Extract short SHA
+#        run: echo "SHORT_SHA=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
+#
+#      - name: Build and push Docker image
+#        run: |
+#          DOCKER_BUILDKIT=1 docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }} .
+#          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }} ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest
+#          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }}
+#          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest
+#        env:
+#          DOCKER_BUILDKIT: 1
 
 #      - name: Create SSH key file
 #        run: echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /tmp/ansible_ssh_key
@@ -51,18 +53,18 @@ jobs:
         shell: bash
         run: |
           eval `ssh-agent -s`
-          mkdir -p /home/${{env.GITHUB_USER}}/.ssh/
-          touch /home/${{env.GITHUB_USER}}/.ssh/id_rsa
-          echo -e "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /home/${{env.GITHUB_USER}}/.ssh/id_rsa
-          chmod 600 /home/${{env.GITHUB_USER}}/.ssh/id_rsa
-          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ec2-3-84-220-245.compute-1.amazonaws.com >> /home/${{env.GITHUB_USER}}/.ssh/known_hosts
+          mkdir -p /home/runner/.ssh/
+          touch /home/runner/.ssh/id_rsa
+          echo -e "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
+          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ec2-3-84-220-245.compute-1.amazonaws.com >> /home/runner/.ssh/known_hosts
       - name: Run ansible deploy playbook
         shell: bash
         run: |
           service ssh status
           cd deploy/ansible
           cat setup-prod.yml
-          ansible-playbook -vvv --private-key /home/${{env.GITHUB_USER}}/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml
+          ansible-playbook -vvv --private-key /home/runner/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml
 
 
 
