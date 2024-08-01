@@ -29,6 +29,7 @@ jobs:
       - name: Extract short SHA
         run: echo "SHORT_SHA=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
 
+      # Делаем билд и пуш образа, используя в качестве тега короткий SHA коммита
       - name: Build and push Docker image
         run: |
           DOCKER_BUILDKIT=1 docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }} .
@@ -46,7 +47,7 @@ jobs:
           touch /home/runner/.ssh/id_rsa
           echo -e "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
-          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ${{ env.ANSIBLE_HOST }} >> /home/runner/.ssh/known_hosts
+          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ec2-54-161-207-94.compute-1.amazonaws.com >> /home/runner/.ssh/known_hosts
 
       - name: Run ansible deploy playbook
         shell: bash
