@@ -54,4 +54,4 @@ jobs:
           service ssh status
           cd deploy/ansible
           cat deploy.yml
-          ansible-playbook -vvv --private-key /home/runner/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml -e docker_image_name="${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }}
+          ansible-playbook -vvv --private-key /home/runner/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml -e docker_image_name="${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }}"
