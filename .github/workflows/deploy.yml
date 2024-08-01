@@ -46,7 +46,7 @@ jobs:
           touch /home/runner/.ssh/id_rsa
           echo -e "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
-          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 {{ env.ANSIBLE_HOST }} >> /home/runner/.ssh/known_hosts
+          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ${{ env.ANSIBLE_HOST }} >> /home/runner/.ssh/known_hosts
 
       - name: Run ansible deploy playbook
         shell: bash
