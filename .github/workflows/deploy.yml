@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       DOCKER_IMAGE: url-shortener-i
-      DOCKER_CONTAINER: url-shortener-c
       ANSIBLE_HOST: ec2-54-161-207-94.compute-1.amazonaws.com
     steps:
       - name: Checkout code
@@ -47,7 +46,7 @@ jobs:
           touch /home/runner/.ssh/id_rsa
           echo -e "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
-          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ec2-54-161-207-94.compute-1.amazonaws.com >> /home/runner/.ssh/known_hosts
+          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ${{ env.ANSIBLE_HOST }} >> /home/runner/.ssh/known_hosts
 
       - name: Run ansible deploy playbook
         shell: bash
@@ -55,4 +54,4 @@ jobs:
           service ssh status
           cd deploy/ansible
           cat deploy.yml
-          ansible-playbook -vvv --private-key /home/runner/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml -e docker_container_name="${{ env.DOCKER_CONTAINER }}" docker_image_name="${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }}
+          ansible-playbook -vvv --private-key /home/runner/.ssh/id_rsa -u ubuntu -i inventory.ini deploy.yml -e docker_image_name="${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ env.SHORT_SHA }}
